@@ -1,0 +1,26 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  config.vm.define "frontend", primary: true do |frontend|
+
+    frontend.vm.box = "ubuntu/trusty64"
+    frontend.vm.hostname = "frontend.local"
+    frontend.vm.network "private_network", ip: "192.168.33.10"
+    frontend.vm.network "forwarded_port", guest: 80, host: 8080
+
+    frontend.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
+    # Share the root project folder, as Vagrantfile is 1 level down so /vagrant wont get it
+    # do leave /vagrant though, as provisioners expect it
+    frontend.vm.synced_folder "./../", "/project", type: "virtualbox"
+
+    frontend.vm.provider "virtualbox" do |vb|
+      vb.gui = false
+      vb.memory = "1024"
+    end
+
+  frontend.vm.provision :shell, :path => ".provision/bootstrap.sh"
+      #shell.args = "/project/vagrant/puppet/archive"
+  end
+end
